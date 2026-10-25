@@ -66,9 +66,7 @@ function onboard() {
         <h1 class="ob-hello">${done ? C.install.doneTitle : C.install.title}</h1>
         <p class="ob-text">${done ? C.install.doneText : C.install.text}</p>
         ${!done && installPrompt ? `<button class="btn solid" data-act="install">${C.install.button}</button>` : ''}
-        ${done ? '' : `<ol class="install-steps">${C.install.steps.map((x) => `<li>${x}</li>`).join('')}</ol>
-        <details class="ios-steps"><summary>${C.install.iosTitle}</summary>
-          <ol class="install-steps">${C.install.iosSteps.map((x) => `<li>${x}</li>`).join('')}</ol></details>`}
+        ${done ? '' : `<ol class="install-steps">${C.install.steps.map((x) => `<li><span>${x}</span></li>`).join('')}</ol>`}
         <button class="${done ? 'btn solid' : 'link'}" data-act="later">${done ? C.install.continue : C.install.later}</button></div>`;
       $('[data-act="later"]', root).onclick = () => { try { sessionStorage.setItem('fanoos.skipInstall', '1'); } catch (e) { /* */ } next(); };
       const ib = $('[data-act="install"]', root);
@@ -113,8 +111,7 @@ function onboard() {
         <input id="otp" class="otp-in" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" aria-describedby="otp-msg">
         ${[0, 1, 2, 3, 4, 5].map((i) => `<span class="slot"></span>${i === 2 ? '<i class="otp-gap"></i>' : ''}`).join('')}
       </div>
-      <p class="ob-err" id="otp-msg" aria-live="polite"></p>
-      <button class="link" data-act="nocode">${C.onboard.noCode}</button></div>`;
+      <p class="ob-err" id="otp-msg" aria-live="polite"></p></div>`;
     const box = $('.otp', root), inp = $('.otp-in', root), err = $('.ob-err', root);
     const slots = [...root.querySelectorAll('.slot')];
     let busy = false;
@@ -157,7 +154,6 @@ function onboard() {
     };
     inp.onfocus = inp.onblur = paint;
     box.onclick = () => inp.focus();
-    $('[data-act="nocode"]', root).onclick = askName;
     paint();
     setTimeout(() => inp.focus(), 500);
   }

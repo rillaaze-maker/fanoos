@@ -1,7 +1,7 @@
 // صفحه‌ی «جابه‌جایی»: حساب‌ها، جریانِ ثبت، و همکارها
 import * as J from './jalali.js';
 import { S, save, uid, shiftOn, typeOf, isWork, addSwap, removeSwap, balances, person, personName } from './store.js';
-import { C, t, $, $$, esc, fa, todayKey, dayTitle, relDay, shiftText, chip, toast, openSheet, closeSheet, shareText, vibrate, download } from './ui.js';
+import { C, t, $, $$, esc, fa, todayKey, dayTitle, relDay, shiftText, chip, toast, openSheet, closeSheet, vibrate, download } from './ui.js';
 import { icon, shiftGlyph, lantern, squiggle } from './glyphs.js';
 import { monthGrid, curMonth, shiftMonth, openPainter } from './calendar.js';
 import { bus } from './bus.js';
@@ -90,27 +90,18 @@ export function summaryText(s) {
   return tpl ? t(tpl, vars(s)) : '';
 }
 
-function messageText(s) {
-  const tpl = { covered: C.swap.msgCovered, trade: C.swap.msgTrade, same: C.swap.msgSame, cover: C.swap.msgCover }[s.kind];
-  const v = vars(s);
-  v.name = nameOf(s); // پیام بیرون از برنامه است؛ بدونِ escape
-  return t(tpl, v);
-}
-
 function openSwapDetail(id) {
   const s = S.swaps.find((x) => x.id === id);
   if (!s) return;
   const body = openSheet(`
     <h2 class="sheet-title">${esc(nameOf(s))}</h2>
     <p class="summary">${summaryText(s).replace(/\n/g, '<br>')}</p>
-    <button class="btn" data-act="share">${icon('share', 'sm')} ${t(C.swap.share, { name: esc(nameOf(s)) })}</button>
     <div class="lbl">${C.swap.addCal}</div>
     ${calButtons(s)}
     <button class="btn danger-btn" data-act="undo">${C.swap.undo}</button>`);
   body.onclick = (e) => {
     const a = e.target.closest('[data-act]');
     if (!a) return;
-    if (a.dataset.act === 'share') shareText(messageText(s));
     if (a.dataset.act === 'phonecal') download(`swap-${s.id}.ics`, icsFile(swapEvents(s), 'fanoos-swap-' + s.id), 'text/calendar');
     if (a.dataset.act === 'undo') { removeSwap(id); toast(C.swap.undone); closeSheet(); bus.refresh(); }
   };
@@ -231,7 +222,6 @@ export function openSwapFlow(key) {
     } else if (f.step === 'saved') {
       h = `<div class="saved">${lantern('happy', 'mid')}
         <p class="summary">${C.swap.saved}</p>
-        <button class="btn solid" data-act="share">${icon('share', 'sm')} ${t(C.swap.share, { name: esc(personName(f.with)) })}</button>
         <div class="lbl">${C.swap.addCal}</div>
         ${calButtons(f.saved)}
         <button class="btn" data-act="close">${C.ui.close}</button></div>`;
@@ -287,7 +277,6 @@ export function openSwapFlow(key) {
       bus.refresh();
       return draw();
     }
-    if (act === 'share') return shareText(messageText(f.saved));
     if (act === 'phonecal') return download(`swap-${f.saved.id}.ics`, icsFile(swapEvents(f.saved), 'fanoos-swap-' + f.saved.id), 'text/calendar');
     if (act === 'close') closeSheet();
   };

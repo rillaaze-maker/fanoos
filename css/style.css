@@ -657,3 +657,4 @@ body.onboarding .tabbar { display: none; }
 @keyframes r-glow { 40% { opacity: 1; filter: url(#wash) brightness(1.18) saturate(1.2); } }
 .spark-host { position: relative; }
 .lantern-wrap { cursor: pointer; }
+.install-steps .en { font-family: var(--f-code); font-weight: 700; direction: ltr; unicode-bidi: isolate; background: var(--paper-3); padding: 1px 8px; border-radius: 7px; white-space: nowrap; }
