@@ -670,3 +670,13 @@ body.onboarding .tabbar { display: none; }
 #onboard .ob { animation: obIn .6s .15s ease both; }
 @keyframes obIn { from { opacity: 0; } }
 #onboard .ob-lantern { animation: none; }
+/* آب‌وهوای روز: گوشه‌ی بالا، کنارِ عدد؛ یادداشت: نقطه‌ی زیرِ کد */
+.cell .mw { top: 3px; bottom: auto; right: 0; left: auto; color: var(--ink-2); }
+.cell .mw .ico { width: 17px; height: 17px; }
+.cell .mw .ghost { display: none; }
+.cell .note-dot { top: 54px; right: 0; left: 0; margin: 0 auto; }
+/* آب‌وهوا: ردیفِ سوم، زیرِ کدِ شیفت */
+.cal-card .cell { height: 72px; }
+.cell .mw { top: 52px; bottom: auto; left: 0; right: 0; margin: 0 auto; width: fit-content; line-height: 0; color: var(--ink-2); }
+.cell .mw .ico { width: 18px; height: 18px; }
+.cell .note-dot { top: 6px; right: 3px; left: auto; margin: 0; }
