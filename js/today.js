@@ -144,8 +144,8 @@ export function renderToday(el) {
 function actionsFor(ctx) {
   const T = C.tools;
   if (ctx.phase === 'before' && S.anchor) return `<p class="anchor-line" data-tool="mine">«${esc(S.anchor)}»</p>`;
-  if (ctx.phase === 'after') {
-    const r = t(T.home.options[S.homeRitual] || T.home.options[0], { name: esc(name()), nameIs: esc(nameIs(name())) });
+  if (ctx.phase === 'after' && T.home.options[S.homeRitual]) {
+    const r = t(T.home.options[S.homeRitual], { name: esc(name()), nameIs: esc(nameIs(name())) });
     return `<section class="card ritual" data-tool="home"><div class="lbl">${T.home.t}</div><p>${r}</p></section>`;
   }
   if (ctx.phase === 'afterNight') {

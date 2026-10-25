@@ -658,3 +658,4 @@ body.onboarding .tabbar { display: none; }
 .spark-host { position: relative; }
 .lantern-wrap { cursor: pointer; }
 .install-steps .en { font-family: var(--f-code); font-weight: 700; direction: ltr; unicode-bidi: isolate; background: var(--paper-3); padding: 1px 8px; border-radius: 7px; white-space: nowrap; }
+.opt.muted-opt { color: var(--ink-2); }

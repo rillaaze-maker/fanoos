@@ -202,7 +202,8 @@ function home() {
   const body = openSheet('', { cls: 'tool-sheet', onClose: () => bus.refresh() });
   const draw = () => {
     body.innerHTML = `<h2 class="sheet-title">${T.home.t}</h2><p class="hint">${T.home.pick}</p>
-      <div class="options">${T.home.options.map((o, i) => `<button class="opt ${i === S.homeRitual ? 'on' : ''}" data-i="${i}">${t(o, { name: esc(name()), nameIs: esc(nameIs(name())) })}</button>`).join('')}</div>`;
+      <div class="options">${T.home.options.map((o, i) => `<button class="opt ${i === S.homeRitual ? 'on' : ''}" data-i="${i}">${t(o, { name: esc(name()), nameIs: esc(nameIs(name())) })}</button>`).join('')}
+        <button class="opt muted-opt ${S.homeRitual < 0 ? 'on' : ''}" data-i="-1">${T.home.none}</button></div>`;
   };
   body.onclick = (e) => { const o = e.target.closest('[data-i]'); if (o) { S.homeRitual = +o.dataset.i; save(); draw(); } };
   draw();
