@@ -107,7 +107,7 @@ export function openDay(key) {
 
     body.innerHTML = `
       <h2 class="sheet-title">${dayTitle(key)}</h2>
-      <div class="day-shift" style="--c:${ty ? ty.color : 'var(--line)'}">
+      <div class="day-shift" style="--c:${ty ? ty.color : 'transparent'}">
         <div class="glyph-big">${ty ? shiftGlyph(ty.kind) : icon('cal')}</div>
         <div>
           <div class="big">${ty ? esc(ty.label) : '—'} ${code ? chip(code) : ''}</div>

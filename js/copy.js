@@ -122,6 +122,7 @@ export const C = {
     },
     linePlaceholder: 'اگه خواستی، یه جمله…',
     save: 'ثبت',
+    saved: 'ثبت شد.',
     edit: 'ویرایش',
     heavyWeek: 'این هفته هوا سنگین بوده. یه سر به «پناه» بزن؟',
   },

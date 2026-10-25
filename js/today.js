@@ -114,7 +114,7 @@ export function renderToday(el) {
     </div>
   </section>
 
-  <section class="card shift-card k-${kind}" data-act="day" data-key="${ctx.key}" style="--c:${ty ? ty.color : 'var(--line)'}">
+  <section class="card shift-card k-${kind}" data-act="day" data-key="${ctx.key}" style="--c:${ty ? ty.color : 'transparent'}">
     <div class="glyph-big">${ty ? shiftGlyph(kind) : icon('cal')}</div>
     <div class="shift-info">
       <div class="lbl">${ctx.key === tk ? C.ui.today : relDay(ctx.key)} ${ctx.code ? chip(ctx.code) : ''}</div>
@@ -168,7 +168,7 @@ function moodBlock(ctx, now) {
     <div class="lbl">${C.mood.ask}</div>
     <div class="wx-row">${opts}</div>
     ${m ? `<p class="mood-thanks">${C.mood.thanks[m.w]}</p>
-      ${m.line && !editingMood ? `<div class="mood-saved"><p>«${esc(m.line)}»</p><button class="link" data-act="moodedit">${C.mood.edit}</button></div>`
+      ${(m.saved || m.line) && !editingMood ? `<div class="mood-saved">${icon('check', 'sm')}<p>${m.line ? `«${esc(m.line)}»` : C.mood.saved}</p><button class="link" data-act="moodedit">${C.mood.edit}</button></div>`
         : `<div class="add-row"><input class="line-in" data-moodline placeholder="${C.mood.linePlaceholder}" value="${esc(m.line || '')}">
           <button class="btn solid mini-btn" data-act="moodsave">${C.mood.save}</button></div>`}` : ''}
   </section>`;
@@ -214,6 +214,7 @@ function bindToday(el, ctx, tk) {
     else if (act === 'moodsave') {
       const v = $('[data-moodline]', el).value.trim();
       S.moods[tk].line = v;
+      S.moods[tk].saved = true;
       save();
       editingMood = false;
       if (v) queueReact('nod');
