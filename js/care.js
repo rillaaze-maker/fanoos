@@ -30,7 +30,7 @@ export function renderCare(el) {
   el.innerHTML = `
   <header class="top"><div><h1 class="greet">${C.care.title}</h1><p class="date">${C.care.sub}</p></div></header>
   ${heavyWeek() ? `<button class="card banner" data-tool="signs">${icon('heart', 'sm')} ${C.mood.heavyWeek}</button>` : ''}
-  <button class="card mine-card" data-tool="mine"><div class="lbl">${T.mine.t}</div><p>«${esc(S.anchor)}»</p></button>
+  <button class="card mine-card" data-tool="mine"><div class="lbl">${T.mine.t}</div><p>${S.anchor ? `«${esc(S.anchor)}»` : `<span class="muted">${C.pick.mineEmpty}</span>`}</p></button>
   <div class="tools">
     ${CARDS.map(([id, ic, tone]) => `<button class="tool card t-${tone}" data-tool="${id}">
       <span class="ti">${icon(ic)}</span>
@@ -131,7 +131,7 @@ function mine() {
   const body = openSheet('', { cls: 'tool-sheet', onClose: () => bus.refresh() });
   const draw = () => {
     body.innerHTML = `<h2 class="sheet-title">${T.mine.t}</h2>
-      <p class="say big-quote">${inkWords(S.anchor)}</p>
+      ${S.anchor ? `<p class="say big-quote">${inkWords(S.anchor)}</p>` : ''}
       <div class="options">${T.mine.options.map((o) => `<button class="opt ${o === S.anchor ? 'on' : ''}" data-o="${esc(o)}">${o}</button>`).join('')}</div>
       <textarea class="note" rows="2" placeholder="${T.mine.own}">${T.mine.options.includes(S.anchor) ? '' : esc(S.anchor)}</textarea>`;
     const ta = $('.note', body);
@@ -240,5 +240,28 @@ function signs() {
     sel.has(i) ? sel.delete(i) : sel.add(i);
     S.signs[mk] = [...sel]; save(); draw();
   };
+  draw();
+}
+
+// ── انتخابِ جمله‌ی بالای «امروز» ──────────────────────────────
+export function openLinePicker() {
+  const body = openSheet('', { cls: 'tool-sheet', onClose: () => bus.refresh() });
+  const seen = new Set();
+  const draw = () => {
+    const groups = Object.entries(C.lines).map(([g, arr]) => {
+      const items = arr.filter((l) => !seen.has(l) && seen.add(l));
+      return items.length ? `<div class="lbl">${C.pick.groups[g] || ''}</div>` + items.map((l) =>
+        `<button class="opt ${S.line === l ? 'on' : ''}" data-l="${esc(l)}">${esc(l)}</button>`).join('') : '';
+    }).join('');
+    seen.clear();
+    const own = S.line && S.line !== '*' && !Object.values(C.lines).flat().includes(S.line) ? S.line : '';
+    body.innerHTML = `<h2 class="sheet-title">${C.pick.title}</h2><p class="hint">${C.pick.hint}</p>
+      <button class="opt daily ${S.line === '*' ? 'on' : ''}" data-l="*">${icon('leaf', 'sm')} ${C.pick.daily}</button>
+      <textarea class="note" rows="2" placeholder="${C.pick.own}">${esc(own)}</textarea>
+      <div class="options">${groups}</div>`;
+    const ta = $('.note', body);
+    ta.oninput = () => { if (ta.value.trim()) { S.line = ta.value.trim(); save(); $$('.opt', body).forEach((o) => o.classList.remove('on')); } };
+  };
+  body.onclick = (e) => { const o = e.target.closest('[data-l]'); if (o) { S.line = o.dataset.l; save(); vibrate(8); draw(); } };
   draw();
 }

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>فانوس</title>
   <meta name="description" content="شیفت‌ها، جابه‌جایی‌ها، و کمی مراقبت از خودت.">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#F6EFE2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -29,8 +30,19 @@
   <!-- فیلترِ لرزشِ دست برای همه‌ی نقاشی‌ها -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <filter id="wob" x="-10%" y="-10%" width="120%" height="120%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="7" result="n"/>
-      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- ردِ دومِ قلم -->
+    <filter id="wob2" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="31" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="G" yChannelSelector="B"/>
+    </filter>
+    <!-- لکه‌ی آبرنگ: لبه‌ی نرم و نامنظم -->
+    <filter id="wash" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="12" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="0.7"/>
     </filter>
   </svg>
 

@@ -9,6 +9,7 @@ import { renderSwaps } from './swaps.js';
 import { renderCare } from './care.js';
 import { applyLook } from './settings.js';
 import { bus } from './bus.js';
+import { loadGift, openGift } from './gift.js';
 
 const views = { today: renderToday, cal: renderCalendar, swaps: renderSwaps, care: renderCare };
 const tabIcons = { today: 'sun', cal: 'cal', swaps: 'swap', care: 'heart' };
@@ -48,23 +49,66 @@ function onboard() {
   const root = $('#onboard');
   root.hidden = false;
   document.body.classList.add('onboarding');
-  root.innerHTML = `<div class="ob">
-    <div class="ob-lantern">${lantern('happy', 'big')}</div>
-    <h1 class="ob-hello">${C.onboard.hello}</h1>
-    <p class="ob-text">${inkWords(C.onboard.iam, 400)}</p>
-    <label class="lbl">${C.onboard.askName}</label>
-    <input class="line-in big" data-name placeholder="${C.onboard.namePh}" autocomplete="given-name">
-    <button class="btn solid" data-act="go">${C.onboard.go}</button></div>`;
-  const inp = $('[data-name]', root);
-  inp.onkeydown = (e) => { if (e.key === 'Enter') $('[data-act]', root).click(); };
-  $('[data-act]', root).onclick = () => {
-    const v = inp.value.trim();
-    if (!v) return inp.focus();
-    S.me.name = v;
-    save();
+  const finish = (toTab) => {
     root.classList.add('leave');
-    setTimeout(() => { root.hidden = true; root.innerHTML = ''; document.body.classList.remove('onboarding'); tab = 'cal'; render(); }, 450);
+    setTimeout(() => { root.hidden = true; root.innerHTML = ''; root.classList.remove('leave'); document.body.classList.remove('onboarding'); tab = toTab; render(); }, 450);
   };
+
+  // اگر gift.json هست، اول رمز؛ وگرنه اسم
+  loadGift().then((gift) => (gift ? askCode(gift) : askName()));
+
+  function askName() {
+    root.innerHTML = `<div class="ob">
+      <div class="ob-lantern">${lantern('happy', 'big')}</div>
+      <h1 class="ob-hello">${C.onboard.hello}</h1>
+      <p class="ob-text">${inkWords(C.onboard.iam, 400)}</p>
+      <label class="lbl">${C.onboard.askName}</label>
+      <input class="line-in big" data-name placeholder="${C.onboard.namePh}" autocomplete="given-name">
+      <button class="btn solid" data-act="go">${C.onboard.go}</button></div>`;
+    const inp = $('[data-name]', root);
+    inp.onkeydown = (e) => { if (e.key === 'Enter') $('[data-act]', root).click(); };
+    $('[data-act]', root).onclick = () => {
+      const v = inp.value.trim();
+      if (!v) return inp.focus();
+      S.me.name = v;
+      save();
+      finish('cal');
+    };
+  }
+
+  function askCode(gift) {
+    root.innerHTML = `<div class="ob">
+      <div class="ob-lantern">${lantern('calm', 'big')}</div>
+      <h1 class="ob-hello">${C.onboard.giftHello}</h1>
+      <p class="ob-text">${inkWords(C.onboard.giftText, 400)}</p>
+      <label class="lbl">${C.onboard.askCode}</label>
+      <input class="line-in big code-in" data-code type="text" inputmode="numeric" autocomplete="off" dir="ltr" placeholder="${C.onboard.codePh}">
+      <p class="ob-err" aria-live="polite"></p>
+      <button class="btn solid" data-act="open">${C.onboard.open}</button>
+      <button class="link" data-act="nocode">${C.onboard.noCode}</button></div>`;
+    const inp = $('[data-code]', root), btn = $('[data-act="open"]', root), err = $('.ob-err', root);
+    inp.onkeydown = (e) => { if (e.key === 'Enter') btn.click(); };
+    $('[data-act="nocode"]', root).onclick = askName;
+    btn.onclick = async () => {
+      if (!inp.value.trim()) return inp.focus();
+      btn.disabled = true;
+      btn.textContent = C.onboard.opening;
+      err.textContent = '';
+      const p = await openGift(gift, inp.value);
+      btn.disabled = false;
+      btn.textContent = C.onboard.open;
+      if (!p) {
+        err.textContent = C.onboard.wrong;
+        inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake');
+        return;
+      }
+      S.me.name = p.name;
+      Object.assign(S.plan, p.plan || {});
+      save();
+      toast(t(C.onboard.welcome, { name: p.name }));
+      finish('today');
+    };
+  }
 }
 
 // ── یادآوری‌ها (وقتی برنامه باز است) ───────────────────────────

@@ -4,7 +4,7 @@ import { S, save, shiftOn, spanOf, typeOf, isWork, swapsOn, balances, personName
 import { C, t, $, $$, esc, fa, todayKey, dayTitle, durationText, shiftText, chip, pick, name, inkWords, relDay } from './ui.js';
 import { icon, weather, shiftGlyph, lantern, squiggle } from './glyphs.js';
 import { openDay } from './calendar.js';
-import { openTool } from './care.js';
+import { openTool, openLinePicker } from './care.js';
 import { openSettings } from './settings.js';
 import { bus } from './bus.js';
 
@@ -63,7 +63,7 @@ export function renderToday(el) {
   const ctx = context(now);
   const ty = typeOf(ctx.code);
   const pool = [...(C.lines[ctx.phase === 'empty' ? 'off' : ctx.phase] || []), ...C.lines.any];
-  const line = pick(pool, tk + ctx.phase);
+  const line = S.line === '*' ? pick(pool, tk + ctx.phase) : S.line;
   const kind = ty ? ty.kind : 'none';
 
   // وضعیتِ شیفت
@@ -103,7 +103,8 @@ export function renderToday(el) {
   <section class="hero">
     <div class="lantern-wrap">${lantern(lanternMood(ctx, now))}</div>
     <div class="line-card paper">
-      <p class="ink">${inkWords(line, 250)}</p>
+      ${line ? `<p class="ink" data-act="pickline">${inkWords(line, 250)}</p>`
+        : `<button class="ink empty-line" data-act="pickline">${C.pick.empty}</button>`}
       <canvas class="doodle"></canvas>
       <div class="doodle-tools">
         <button class="mini" data-act="draw" aria-label="${C.draw.hint}">${icon('pen', 'sm')}</button>
@@ -136,18 +137,13 @@ export function renderToday(el) {
   bindToday(el, ctx, tk);
 }
 
+// فقط وقتی معنا دارد: آیینِ راهِ خونه بعد از شیفت، و یادداشتِ خواب بعد از شب
 function actionsFor(ctx) {
-  const b = (tool, ic, label) => `<button class="pill" data-tool="${tool}">${icon(ic, 'sm')}<span>${label}</span></button>`;
   const T = C.tools;
-  if (ctx.phase === 'before') {
-    return `<section class="actions">${b('sigh', 'leaf', T.sigh.t)}${b('mine', 'heart', T.mine.t)}</section>
-      <p class="anchor-line" data-tool="mine">«${esc(S.anchor)}»</p>`;
-  }
-  if (ctx.phase === 'during') return `<section class="actions">${b('scrub', 'swap', T.scrub.t)}${b('sigh', 'leaf', T.sigh.t)}${b('name', 'heart', T.name.t)}</section>`;
+  if (ctx.phase === 'before' && S.anchor) return `<p class="anchor-line" data-tool="mine">«${esc(S.anchor)}»</p>`;
   if (ctx.phase === 'after') {
     const r = t(T.home.options[S.homeRitual] || T.home.options[0], { name: esc(name()) });
-    return `<section class="card ritual" data-tool="home"><div class="lbl">${T.home.t}</div><p>${r}</p></section>
-      <section class="actions">${b('light', 'pen', T.light.t)}${b('loss', 'heart', T.loss.t)}</section>`;
+    return `<section class="card ritual" data-tool="home"><div class="lbl">${T.home.t}</div><p>${r}</p></section>`;
   }
   if (ctx.phase === 'afterNight') {
     const tips = C.sleep.tips;
@@ -155,7 +151,7 @@ function actionsFor(ctx) {
     return `<section class="card sleep"><div class="lbl">${icon('moon', 'sm')} ${C.sleep.title}</div>
       <ul><li>${tips[i]}</li><li>${tips[(i + 1) % tips.length]}</li></ul></section>`;
   }
-  return `<section class="actions">${b('box', 'leaf', T.box.t)}${b('light', 'pen', T.light.t)}</section>`;
+  return '';
 }
 
 function moodBlock(ctx, now) {
@@ -206,6 +202,7 @@ function bindToday(el, ctx, tk) {
     if (act === 'settings') openSettings();
     else if (act === 'day') openDay(a.dataset.key);
     else if (act === 'draw') toggleDraw(el, tk, a);
+    else if (act === 'pickline' && !$('.line-card', el).classList.contains('drawing')) openLinePicker();
   };
   const li = $('[data-act="moodline"]', el);
   if (li) li.oninput = () => { S.moods[tk].line = li.value; save(); };

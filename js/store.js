@@ -29,7 +29,8 @@ const defaults = () => ({
   moods: {},         // {key: {w, line}}
   doodles: {},       // {key: [[x,y,x,y…], …]}
   light: [],         // [{at, text}]
-  anchor: 'کارِ بعدی. فقط کارِ بعدی.',
+  anchor: '',       // جمله‌ی لنگر؛ خودش انتخاب می‌کند
+  line: '',         // جمله‌ی بالای «امروز»؛ '*' یعنی هر روز یکی تازه
   homeRitual: 0,
   signs: {},         // {'1405-08': [indices]}
   grief: null,       // {key, time}
