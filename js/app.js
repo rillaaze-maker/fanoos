@@ -1,7 +1,7 @@
 // نقطه‌ی شروع
 import * as J from './jalali.js';
-import { S, save, shiftOn, spanOf, swapsOn, isWork, personName, typeOf } from './store.js';
-import { C, t, $, $$, esc, todayKey, shiftText, toast, inkWords, closeAllSheets } from './ui.js';
+import { S, save, uid, ensureType, shiftOn, spanOf, swapsOn, isWork, personName, typeOf } from './store.js';
+import { C, t, $, $$, esc, fa, todayKey, shiftText, toast, inkWords, closeAllSheets, vibrate } from './ui.js';
 import { icon, lantern, shiftGlyph } from './glyphs.js';
 import { renderToday } from './today.js';
 import { renderCalendar } from './calendar.js';
@@ -9,7 +9,7 @@ import { renderSwaps } from './swaps.js';
 import { renderCare } from './care.js';
 import { applyLook } from './settings.js';
 import { bus } from './bus.js';
-import { loadGift, openGift } from './gift.js';
+import { loadGift, openGift, normalizeCode } from './gift.js';
 
 const views = { today: renderToday, cal: renderCalendar, swaps: renderSwaps, care: renderCare };
 const tabIcons = { today: 'sun', cal: 'cal', swaps: 'swap', care: 'heart' };
@@ -55,7 +55,34 @@ function onboard() {
   };
 
   // اگر gift.json هست، اول رمز؛ وگرنه اسم
-  loadGift().then((gift) => (gift ? askCode(gift) : askName()));
+  const start = () => loadGift().then((gift) => (gift ? askCode(gift) : askName()));
+  if (needsInstall()) askInstall(start); else start();
+
+  // راهنمای نصب: اول برنامه را روی صفحه‌ی گوشی بگذار
+  function askInstall(next) {
+    const draw = (done) => {
+      root.innerHTML = `<div class="ob">
+        <div class="ob-lantern">${lantern('happy', 'big')}</div>
+        <h1 class="ob-hello">${done ? C.install.doneTitle : C.install.title}</h1>
+        <p class="ob-text">${done ? C.install.doneText : C.install.text}</p>
+        ${!done && installPrompt ? `<button class="btn solid" data-act="install">${C.install.button}</button>` : ''}
+        ${done ? '' : `<ol class="install-steps">${C.install.steps.map((x) => `<li>${x}</li>`).join('')}</ol>
+        <details class="ios-steps"><summary>${C.install.iosTitle}</summary>
+          <ol class="install-steps">${C.install.iosSteps.map((x) => `<li>${x}</li>`).join('')}</ol></details>`}
+        <button class="${done ? 'btn solid' : 'link'}" data-act="later">${done ? C.install.continue : C.install.later}</button></div>`;
+      $('[data-act="later"]', root).onclick = () => { try { sessionStorage.setItem('fanoos.skipInstall', '1'); } catch (e) { /* */ } next(); };
+      const ib = $('[data-act="install"]', root);
+      if (ib) ib.onclick = async () => {
+        installPrompt.prompt();
+        const r = await installPrompt.userChoice;
+        installPrompt = null;
+        draw(r.outcome === 'accepted');
+      };
+    };
+    onInstallChange = () => draw(false);
+    window.addEventListener('appinstalled', () => draw(true), { once: true });
+    draw(false);
+  }
 
   function askName() {
     root.innerHTML = `<div class="ob">
@@ -81,34 +108,111 @@ function onboard() {
       <div class="ob-lantern">${lantern('calm', 'big')}</div>
       <h1 class="ob-hello">${C.onboard.giftHello}</h1>
       <p class="ob-text">${inkWords(C.onboard.giftText, 400)}</p>
-      <label class="lbl">${C.onboard.askCode}</label>
-      <input class="line-in big code-in" data-code type="text" inputmode="numeric" autocomplete="off" dir="ltr" placeholder="${C.onboard.codePh}">
-      <p class="ob-err" aria-live="polite"></p>
-      <button class="btn solid" data-act="open">${C.onboard.open}</button>
+      <label class="lbl" for="otp">${C.onboard.askCode}</label>
+      <div class="otp" dir="ltr">
+        <input id="otp" class="otp-in" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" aria-describedby="otp-msg">
+        ${[0, 1, 2, 3, 4, 5].map((i) => `<span class="slot"></span>${i === 2 ? '<i class="otp-gap"></i>' : ''}`).join('')}
+      </div>
+      <p class="ob-err" id="otp-msg" aria-live="polite"></p>
       <button class="link" data-act="nocode">${C.onboard.noCode}</button></div>`;
-    const inp = $('[data-code]', root), btn = $('[data-act="open"]', root), err = $('.ob-err', root);
-    inp.onkeydown = (e) => { if (e.key === 'Enter') btn.click(); };
-    $('[data-act="nocode"]', root).onclick = askName;
-    btn.onclick = async () => {
-      if (!inp.value.trim()) return inp.focus();
-      btn.disabled = true;
-      btn.textContent = C.onboard.opening;
+    const box = $('.otp', root), inp = $('.otp-in', root), err = $('.ob-err', root);
+    const slots = [...root.querySelectorAll('.slot')];
+    let busy = false;
+
+    const paint = () => {
+      const d = inp.value;
+      slots.forEach((el, i) => {
+        el.textContent = d[i] ? fa(d[i]) : '';
+        el.classList.toggle('filled', !!d[i]);
+        el.classList.toggle('active', document.activeElement === inp && i === Math.min(d.length, 5) && d.length < 6);
+      });
+    };
+
+    inp.oninput = async () => {
+      if (busy) return;
+      inp.value = normalizeCode(inp.value).replace(/\D/g, '').slice(0, 6);
       err.textContent = '';
+      box.classList.remove('bad');
+      paint();
+      if (inp.value.length < 6) return;
+      busy = true;
+      box.classList.add('checking');
+      err.textContent = C.onboard.opening;
+      err.classList.add('wait');
       const p = await openGift(gift, inp.value);
-      btn.disabled = false;
-      btn.textContent = C.onboard.open;
+      box.classList.remove('checking');
+      err.classList.remove('wait');
+      busy = false;
       if (!p) {
         err.textContent = C.onboard.wrong;
-        inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake');
+        box.classList.remove('bad'); void box.offsetWidth; box.classList.add('bad');
+        vibrate([30, 40, 30]);
+        setTimeout(() => { inp.value = ''; paint(); }, 650);
         return;
       }
-      S.me.name = p.name;
-      Object.assign(S.plan, p.plan || {});
-      save();
-      toast(t(C.onboard.welcome, { name: p.name }));
-      finish('today');
+      box.classList.add('ok');
+      err.textContent = '';
+      vibrate(15);
+      unlock(p);
     };
+    inp.onfocus = inp.onblur = paint;
+    box.onclick = () => inp.focus();
+    $('[data-act="nocode"]', root).onclick = askName;
+    paint();
+    setTimeout(() => inp.focus(), 500);
   }
+
+  function unlock(p) {
+    S.me.name = p.name;
+    Object.assign(S.plan, p.plan || {});
+    // همکارها هم با همین رمز می‌آیند
+    for (const c of p.people || []) {
+      const old = S.people.find((x) => x.name === c.name);
+      if (old) Object.assign(old.plan, c.plan || {});
+      else S.people.push({ id: uid(), name: c.name, plan: { ...(c.plan || {}) } });
+      for (const code of Object.values(c.plan || {})) ensureType(code);
+    }
+    save();
+    toast(t(C.onboard.welcome, { name: p.name }));
+    setTimeout(() => finish('today'), 450);
+  }
+}
+
+// ── نصب ──────────────────────────────────────────────────────
+let installPrompt = null;
+let onInstallChange = () => {};
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; onInstallChange(); });
+
+function needsInstall() {
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  let skipped = false;
+  try { skipped = sessionStorage.getItem('fanoos.skipInstall') === '1'; } catch (e) { /* */ }
+  return !standalone && !skipped && matchMedia('(pointer: coarse)').matches;
+}
+
+// ── شروعِ برنامه: شعله‌ی خواب‌آلود بیدار می‌شود، یه جرقه می‌زند و می‌رود سرِ جایش ──
+function splash() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ov = document.createElement('div');
+  ov.className = 'splash';
+  ov.innerHTML = `<div class="sp-flame">${lantern('sleepy')}</div>`;
+  document.body.appendChild(ov);
+  const f = $('.sp-flame', ov);
+  const target = $('.lantern-wrap');
+  if (target) target.style.visibility = 'hidden';
+  setTimeout(() => {
+    f.innerHTML = lantern('happy') + '<i class="spark" style="--dx:-14px"></i><i class="spark" style="--dx:2px;animation-delay:.05s"></i><i class="spark" style="--dx:16px;animation-delay:.1s"></i>';
+    f.classList.add('flare');
+  }, 950);
+  setTimeout(() => {
+    const t = $('.lantern-wrap');
+    if (t) {
+      const a = f.getBoundingClientRect(), b = t.getBoundingClientRect();
+      f.style.transform = `translate(${b.left + b.width / 2 - (a.left + a.width / 2)}px, ${b.top + b.height / 2 - (a.top + a.height / 2)}px) scale(${b.width / a.width})`;
+    }
+    ov.classList.add('go');
+  }, 1650);
+  setTimeout(() => { const t = $('.lantern-wrap'); if (t) t.style.visibility = ''; ov.remove(); }, 2500);
 }
 
 // ── یادآوری‌ها (وقتی برنامه باز است) ───────────────────────────
@@ -162,7 +266,7 @@ if (history.state && history.state.sheet) history.replaceState(null, '');
 applyLook();
 buildTabbar();
 render();
-if (!S.me.name) onboard();
+if (!S.me.name) onboard(); else splash();
 
 setInterval(() => { tick(); }, 30e3);
 setTimeout(tick, 1500);

@@ -1,14 +1,16 @@
 // صفحه‌ی «امروز»
 import * as J from './jalali.js';
 import { S, save, shiftOn, spanOf, typeOf, isWork, swapsOn, balances, personName } from './store.js';
-import { C, t, $, $$, esc, fa, todayKey, dayTitle, durationText, shiftText, chip, pick, name, inkWords, relDay } from './ui.js';
+import { C, t, $, $$, esc, fa, todayKey, dayTitle, durationText, shiftText, chip, pick, name, inkWords, relDay, nameIs } from './ui.js';
 import { icon, weather, shiftGlyph, lantern, squiggle } from './glyphs.js';
 import { openDay } from './calendar.js';
 import { openTool, openLinePicker } from './care.js';
 import { openSettings } from './settings.js';
 import { bus } from './bus.js';
+import { react, queueReact, playQueued } from './mascot.js';
 
 const NIGHTISH = ['night', 'full'];
+let editingMood = false;
 
 // الان در کجای روزِ کاری هستیم؟
 export function context(now = new Date()) {
@@ -62,7 +64,7 @@ export function renderToday(el) {
   const tk = todayKey();
   const ctx = context(now);
   const ty = typeOf(ctx.code);
-  const pool = [...(C.lines[ctx.phase === 'empty' ? 'off' : ctx.phase] || []), ...C.lines.any];
+  const pool = [...(C.lines[ctx.phase === 'empty' ? 'off' : ctx.phase] || []), ...C.lines.any, ...C.lines.ayat];
   const line = S.line === '*' ? pick(pool, tk + ctx.phase) : S.line;
   const kind = ty ? ty.kind : 'none';
 
@@ -101,7 +103,7 @@ export function renderToday(el) {
   </header>
 
   <section class="hero">
-    <div class="lantern-wrap">${lantern(lanternMood(ctx, now))}</div>
+    <div class="lantern-wrap" data-act="flame" role="img">${lantern(lanternMood(ctx, now))}</div>
     <div class="line-card paper">
       ${line ? `<p class="ink" data-act="pickline">${inkWords(line, 250)}</p>`
         : `<button class="ink empty-line" data-act="pickline">${C.pick.empty}</button>`}
@@ -135,6 +137,7 @@ export function renderToday(el) {
   `;
 
   bindToday(el, ctx, tk);
+  playQueued(el);
 }
 
 // فقط وقتی معنا دارد: آیینِ راهِ خونه بعد از شیفت، و یادداشتِ خواب بعد از شب
@@ -142,7 +145,7 @@ function actionsFor(ctx) {
   const T = C.tools;
   if (ctx.phase === 'before' && S.anchor) return `<p class="anchor-line" data-tool="mine">«${esc(S.anchor)}»</p>`;
   if (ctx.phase === 'after') {
-    const r = t(T.home.options[S.homeRitual] || T.home.options[0], { name: esc(name()) });
+    const r = t(T.home.options[S.homeRitual] || T.home.options[0], { name: esc(name()), nameIs: esc(nameIs(name())) });
     return `<section class="card ritual" data-tool="home"><div class="lbl">${T.home.t}</div><p>${r}</p></section>`;
   }
   if (ctx.phase === 'afterNight') {
@@ -165,7 +168,9 @@ function moodBlock(ctx, now) {
     <div class="lbl">${C.mood.ask}</div>
     <div class="wx-row">${opts}</div>
     ${m ? `<p class="mood-thanks">${C.mood.thanks[m.w]}</p>
-      <input class="line-in" data-act="moodline" placeholder="${C.mood.linePlaceholder}" value="${esc(m.line || '')}">` : ''}
+      ${m.line && !editingMood ? `<div class="mood-saved"><p>«${esc(m.line)}»</p><button class="link" data-act="moodedit">${C.mood.edit}</button></div>`
+        : `<div class="add-row"><input class="line-in" data-moodline placeholder="${C.mood.linePlaceholder}" value="${esc(m.line || '')}">
+          <button class="btn solid mini-btn" data-act="moodsave">${C.mood.save}</button></div>`}` : ''}
   </section>`;
 }
 
@@ -196,16 +201,27 @@ function bindToday(el, ctx, tk) {
       const prev = S.moods[tk] || {};
       S.moods[tk] = { ...prev, w: a.dataset.mood };
       save();
+      queueReact({ sun: 'hop', partly: 'nod', rain: 'droop', storm: 'droop' }[a.dataset.mood]);
       return bus.refresh();
     }
     const act = a.dataset.act;
     if (act === 'settings') openSettings();
     else if (act === 'day') openDay(a.dataset.key);
     else if (act === 'draw') toggleDraw(el, tk, a);
+    else if (act === 'flame') react('giggle', el);
     else if (act === 'pickline' && !$('.line-card', el).classList.contains('drawing')) openLinePicker();
+    else if (act === 'moodedit') { editingMood = true; bus.refresh(); $('[data-moodline]', el).focus(); }
+    else if (act === 'moodsave') {
+      const v = $('[data-moodline]', el).value.trim();
+      S.moods[tk].line = v;
+      save();
+      editingMood = false;
+      if (v) queueReact('nod');
+      bus.refresh();
+    }
   };
-  const li = $('[data-act="moodline"]', el);
-  if (li) li.oninput = () => { S.moods[tk].line = li.value; save(); };
+  const li = $('[data-moodline]', el);
+  if (li) li.onkeydown = (e) => { if (e.key === 'Enter') $('[data-act="moodsave"]', el).click(); };
   setupDoodle(el, tk);
 }
 

@@ -5,6 +5,7 @@ import { C, t, $, $$, esc, fa, todayKey, toast, openSheet, download, shiftText }
 import { icon } from './glyphs.js';
 import { curMonth, shiftMonth } from './calendar.js';
 import { bus } from './bus.js';
+import { icsText, stamp, fold } from './ics.js';
 
 export function applyLook() {
   const root = document.documentElement;
@@ -38,25 +39,39 @@ export function openSettings() {
       <input type="color" value="${x.color}" data-f="color" aria-label="رنگ">
       <input class="code-in" dir="ltr" value="${esc(x.code)}" data-f="code" aria-label="کد">
       <input class="lab-in" value="${esc(x.label)}" data-f="label" aria-label="نام">
-      <input type="time" value="${x.start}" data-f="start" aria-label="شروع">
-      <input type="time" value="${x.end}" data-f="end" aria-label="پایان">
+      ${x.kind === 'off' || x.kind === 'leave' ? '' : `<input type="time" value="${x.start}" data-f="start" aria-label="شروع">
+      <input type="time" value="${x.end}" data-f="end" aria-label="پایان">`}
       <button class="icon-btn" data-del="${i}" aria-label="${C.ui.delete}">${icon('x', 'xs')}</button>
     </div>`).join('')}</div>
     <button class="btn" data-act="addtype">${icon('plus', 'sm')} ${C.settings.addType}</button>
 
     <label class="lbl">${C.settings.notif}</label>
-    <p class="hint">${C.settings.notifHint}</p>
-    <div class="row2">
-      <button class="btn" data-act="notif" ${notifOn ? 'disabled' : ''}>${icon('bell', 'sm')} ${notifOn ? C.settings.notifIsOn : C.settings.notifOn}</button>
-      <button class="btn" data-act="ics">${icon('cal', 'sm')} ${C.settings.ics}</button>
+    <div class="list">
+      <button class="li" data-act="notif" ${notifOn ? 'disabled' : ''}>
+        <span class="li-ic">${icon('bell')}</span>
+        <span class="li-tx"><b>${C.settings.notifTitle}</b><small>${C.settings.notifHint}</small></span>
+        <em class="li-st ${notifOn ? 'on' : ''}">${notifOn ? C.settings.notifIsOn : C.settings.notifOn}</em>
+      </button>
+      <button class="li" data-act="ics">
+        <span class="li-ic">${icon('cal')}</span>
+        <span class="li-tx"><b>${C.settings.ics}</b><small>${C.settings.icsHint}</small></span>
+        <span class="li-go">${icon('chevL', 'sm')}</span>
+      </button>
     </div>
-    <p class="hint">${C.settings.icsHint}</p>
 
     <label class="lbl">${C.settings.backup}</label>
-    <p class="hint">${C.settings.backupHint}</p>
-    <div class="row2">
-      <button class="btn" data-act="export">${icon('share', 'sm')} ${C.settings.export}</button>
-      <label class="btn">${icon('pen', 'sm')} ${C.settings.import}<input type="file" accept="application/json,.json" hidden data-import></label>
+    <div class="list">
+      <button class="li" data-act="export">
+        <span class="li-ic">${icon('share')}</span>
+        <span class="li-tx"><b>${C.settings.export}</b><small>${C.settings.backupHint}</small></span>
+        <span class="li-go">${icon('chevL', 'sm')}</span>
+      </button>
+      <label class="li">
+        <span class="li-ic">${icon('pen')}</span>
+        <span class="li-tx"><b>${C.settings.import}</b><small>${C.settings.importHint}</small></span>
+        <span class="li-go">${icon('chevL', 'sm')}</span>
+        <input type="file" accept="application/json,.json" hidden data-import>
+      </label>
     </div>
     <p class="about">${C.settings.about}</p>`;
   };
@@ -110,10 +125,6 @@ export function openSettings() {
 }
 
 // ── فایلِ تقویم (ics) — یادآوریِ مطمئن از طریقِ تقویمِ خودِ گوشی ──
-function icsText(s) { return String(s).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/([,;])/g, '\\$1'); }
-const stamp = (d) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}00`;
-const fold = (line) => { const out = []; while (line.length > 60) { out.push(line.slice(0, 60)); line = ' ' + line.slice(60); } out.push(line); return out.join('\r\n'); };
-
 function buildIcs() {
   const m = curMonth();
   const now = stamp(new Date());

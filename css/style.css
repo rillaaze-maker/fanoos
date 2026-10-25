@@ -341,8 +341,8 @@ textarea.note:focus { border-color: var(--amber); outline: none; }
 .swap-item { display: grid; gap: 2px; margin: 0; padding: 12px 14px; box-shadow: var(--shadow-sm); }
 .swap-item .when { font-weight: 800; font-size: 13.5px; color: var(--amber-ink); }
 .swap-item .what { font-size: 15px; }
-.past { margin-top: 18px; }
-.past summary { cursor: pointer; color: var(--ink-2); font-weight: 700; padding: 6px 0; }
+details.past { margin-top: 18px; }
+details.past summary { cursor: pointer; color: var(--ink-2); font-weight: 700; padding: 6px 0; }
 .people { display: flex; flex-wrap: wrap; gap: 8px; }
 .person {
   display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px 5px 6px;
@@ -502,3 +502,158 @@ body.onboarding .tabbar { display: none; }
 .line-card .ink[data-act] { cursor: pointer; }
 .muted { color: var(--ink-3); font-size: 15px; }
 .opt.daily { display: flex; align-items: center; gap: 8px; width: 100%; }
+
+/* ── خانه‌های تقویم: جای ثابت برای عدد و کد، تا روی هر گوشی هم‌تراز بمانند ── */
+.cell { display: block; height: 60px; min-height: 0; padding: 0; width: 100%; -webkit-appearance: none; appearance: none; }
+.cell .dn { position: absolute; top: 4px; left: 0; right: 0; text-align: center; line-height: 20px; }
+.cell .blob { position: absolute; top: 30px; left: 0; right: 0; margin: 0 auto; width: fit-content; min-width: 32px; }
+.cell .their { position: absolute; top: 50px; left: 0; right: 0; text-align: center; line-height: 12px; }
+.cell .ring { top: -1px; }
+.cell .sw { top: 4px; left: 1px; }
+.cell .mw { bottom: 0; left: 1px; }
+.grid.paint .cell { height: 58px; }
+.flow .grid .cell { height: 64px; }
+
+/* ── فهرستِ تنظیمات ─────────────────────────────────────── */
+.list { border: 1.5px solid var(--line); border-radius: var(--r); background: var(--paper-2); overflow: hidden; }
+.li { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px; text-align: right; cursor: pointer; }
+.li + .li { border-top: 1.5px dashed var(--line-soft); }
+.li-ic { flex: none; width: 30px; height: 30px; display: grid; place-items: center; color: var(--ink); }
+.li-tx { flex: 1; display: flex; flex-direction: column; line-height: 1.6; }
+.li-tx b { font-size: 15.5px; }
+.li-tx small { color: var(--ink-3); font-size: 12.5px; }
+.li-go { flex: none; color: var(--ink-3); }
+.li-st { flex: none; font-style: normal; font-size: 12.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--paper-3); color: var(--ink-2); }
+.li-st.on { background: var(--teal-soft); color: var(--teal); }
+.li[disabled] { cursor: default; }
+.li:active:not([disabled]) { background: var(--paper-3); }
+
+/* ── یادداشتِ امروز ────────────────────────────────────── */
+.mini-btn { width: auto; margin: 0; padding: 10px 18px; flex: none; }
+.mood-saved { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 10px 14px; border-radius: var(--r-sm); background: var(--paper); }
+.mood-saved p { flex: 1; margin: 0; font-weight: 600; }
+
+/* ── آیه و ذکر ─────────────────────────────────────────── */
+.ar { font-size: 1.12em; line-height: 2.1; }
+.tr { font-size: .78em; color: var(--ink-2); font-weight: 500; line-height: 1.9; }
+.line-card .ink .tr { display: inline-block; }
+.refuge-intro { color: var(--ink-2); line-height: 2; margin: 0 0 6px; }
+.refuge { padding: 14px 0; border-top: 1.5px dashed var(--line-soft); }
+.refuge .lbl { margin: 0 0 4px; }
+.ar-big { font-size: 21px; line-height: 2; margin: 0; font-weight: 700; }
+.refuge .ref { margin: 0; color: var(--amber-ink); font-size: 13px; font-weight: 700; }
+.refuge .after { margin: 6px 0 0; color: var(--ink-2); font-size: 14.5px; line-height: 1.9; }
+
+/* ── دکمه‌های تقویم ─────────────────────────────────────── */
+.cal-btns { display: grid; gap: 8px; }
+.cal-btns .btn { margin: 0; text-decoration: none; color: var(--ink); font-size: 14.5px; }
+
+/* ── راهنمای نصب ───────────────────────────────────────── */
+.install-steps { text-align: right; padding: 0; margin: 18px 0 8px; list-style: none; counter-reset: s; }
+.install-steps li { counter-increment: s; display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1.5px dashed var(--line-soft); line-height: 1.9; }
+.install-steps li::before { content: counter(s, persian); flex: none; width: 26px; height: 26px; display: grid; place-items: center; border: 1.5px solid var(--line); border-radius: 50%; font-weight: 700; font-size: 13px; margin-top: 3px; }
+.ios-steps { text-align: right; margin: 10px 0; color: var(--ink-2); }
+.ios-steps summary { cursor: pointer; font-weight: 700; padding: 6px 0; }
+
+/* ── شروع: شعله ─────────────────────────────────────────── */
+.splash { position: fixed; inset: 0; z-index: 95; display: grid; place-items: center; background: var(--paper); transition: background-color .8s ease; }
+.splash.go { background-color: transparent; pointer-events: none; }
+.sp-flame { position: relative; width: 120px; transition: transform .8s cubic-bezier(.55, 0, .2, 1), opacity .8s ease; }
+.splash.go .sp-flame { opacity: .8; }
+.sp-flame .lantern { width: 100%; }
+.sp-flame.flare .lantern { animation: flare .65s ease-out; transform-origin: 50% 88%; }
+@keyframes flare {
+  0% { transform: none; }
+  30% { transform: translateY(-10px) scale(1.12, 1.3); }
+  55% { transform: translateY(2px) scale(.95, .92); }
+  100% { transform: none; }
+}
+.spark { position: absolute; top: 14%; left: 50%; width: 6px; height: 6px; border-radius: 50%; background: var(--flame); animation: spark .7s ease-out forwards; }
+@keyframes spark { from { transform: translate(-50%, 0) scale(1); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), -38px) scale(.3); opacity: 0; } }
+.saved .cal-btns, .saved .btn { width: 100%; }
+.saved .lbl { align-self: flex-start; }
+/* کاغذِ ساده، بی‌خط */
+.line-card { background-image: none; }
+.line-card .ink { line-height: 2; }
+
+/* ── رمزِ شش‌رقمی ───────────────────────────────────────── */
+.otp { position: relative; display: flex; justify-content: center; align-items: center; gap: 8px; margin: 6px auto 0; cursor: text; }
+.otp-in {
+  position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0;
+  font-size: 16px; color: transparent; caret-color: transparent; background: transparent; z-index: 2;
+}
+.slot {
+  position: relative; width: 46px; height: 58px; display: grid; place-items: center;
+  border: 1.5px solid var(--line-soft); border-radius: 13px 15px 12px 14px / 15px 12px 14px 13px;
+  background: var(--paper-2); font-family: var(--f-body); font-size: 26px; font-weight: 800; color: var(--ink);
+  transition: border-color .18s, transform .18s, background-color .18s;
+}
+.slot.filled { border-color: var(--line); animation: slotIn .22s ease; }
+.slot.active { border-color: var(--amber); box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 22%, transparent); }
+.slot.active::after { content: ''; width: 2px; height: 26px; border-radius: 2px; background: var(--amber-ink); animation: caret 1s steps(1) infinite; }
+.otp-gap { width: 10px; height: 2px; border-radius: 2px; background: var(--line-soft); margin: 0 2px; }
+.otp.checking .slot { animation: breathe .9s ease-in-out infinite alternate; }
+.otp.checking .slot:nth-of-type(2) { animation-delay: .1s; }
+.otp.checking .slot:nth-of-type(3) { animation-delay: .2s; }
+.otp.checking .slot:nth-of-type(4) { animation-delay: .3s; }
+.otp.checking .slot:nth-of-type(5) { animation-delay: .4s; }
+.otp.checking .slot:nth-of-type(6) { animation-delay: .5s; }
+.otp.bad { animation: shake .42s ease; }
+.otp.bad .slot { border-color: var(--rose); color: var(--rose); }
+.otp.ok .slot { border-color: var(--teal); background: var(--teal-soft); color: var(--teal); }
+@keyframes slotIn { from { transform: scale(.86); } }
+@keyframes caret { 50% { opacity: 0; } }
+@keyframes breathe { to { background-color: var(--amber-soft); border-color: var(--amber); } }
+.ob .ob-err { text-align: center; min-height: 1.8em; margin-top: 12px; }
+@media (max-width: 360px) { .slot { width: 40px; height: 52px; font-size: 23px; } .otp { gap: 6px; } }
+.ob-err.wait { color: var(--ink-3); font-weight: 500; }
+
+/* ── حرکت‌های کوچک ─────────────────────────────────────── */
+/* کلمه‌ها با یه لرزشِ کوچیک، مثلِ نوشتن با قلم، ظاهر می‌شن */
+@keyframes inkIn {
+  0% { opacity: 0; filter: blur(3px); transform: translateY(4px) rotate(-3deg); }
+  55% { opacity: 1; filter: none; transform: translateY(0) rotate(1.6deg); }
+  78% { transform: rotate(-.7deg); }
+  100% { transform: none; }
+}
+/* خطِ دستی آروم «می‌جوشه» */
+.lantern .ghost, .glyph-big .ghost, .tabbar .on .ghost { animation: boil 1.2s steps(1) infinite; }
+.squiggle path, .cell .ring { animation: boil 1.2s steps(1) infinite; }
+.cell .ring path { animation: draw 1s .3s ease both; }
+@keyframes boil { 0% { filter: url(#wob2); } 33% { filter: url(#wob3); } 66% { filter: url(#wob4); } }
+/* نوارِ پایین کمی شناوره */
+.tabbar { animation: floaty 6s ease-in-out infinite; box-shadow: 0 10px 24px -14px rgba(42, 38, 51, .45); }
+@keyframes floaty { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-3px); } }
+
+/* ── چهره و واکنش‌های شعله ─────────────────────────────── */
+.lantern .face { display: none; }
+.lantern.m-calm .f-calm, .lantern.m-soft .f-soft, .lantern.m-sleepy .f-sleepy,
+.lantern.m-happy .f-happy, .lantern.m-tender .f-tender { display: inline; }
+/* پلک زدن: هر چند ثانیه یک بار، با تأخیرِ تصادفی */
+.lantern .eyes { transform-box: fill-box; transform-origin: center; animation: blink 5.5s var(--blink-delay, 3s) infinite; }
+@keyframes blink { 0%, 93%, 100% { transform: none; } 95% { transform: scaleY(.1); } }
+/* نفس کشیدن */
+.lantern .body { transform-box: fill-box; transform-origin: 50% 100%; animation: breathe-flame 4.2s ease-in-out infinite; }
+@keyframes breathe-flame { 50% { transform: scale(1.015, 1.035); } }
+.lantern.m-sleepy .body { animation-duration: 6.5s; }
+/* واکنش‌ها روی کلِ شعله */
+.lantern { transform-origin: 50% 92%; }
+.lantern.r-hop { animation: r-hop .6s cubic-bezier(.3, .7, .4, 1); }
+.lantern.r-nod { animation: r-nod .45s ease-out; }
+.lantern.r-droop { animation: r-droop 1.5s ease-in-out; }
+.lantern.r-giggle { animation: r-giggle .65s ease-in-out; }
+.lantern.r-glow .flame { animation: r-glow .9s ease-out; }
+@keyframes r-hop {
+  0% { transform: none; }
+  18% { transform: scale(1.07, .9); }
+  45% { transform: translateY(-9px) scale(.95, 1.08); }
+  70% { transform: scale(1.04, .95); }
+  86% { transform: scale(.99, 1.01); }
+  100% { transform: none; }
+}
+@keyframes r-nod { 35% { transform: translateY(2px) rotate(-4deg) scale(1.02, .97); } 70% { transform: rotate(1.5deg); } }
+@keyframes r-droop { 35% { transform: translateY(3px) rotate(-3deg) scale(1.04, .92); } 70% { transform: translateY(2px) rotate(-2deg) scale(1.03, .94); } }
+@keyframes r-giggle { 20% { transform: rotate(-7deg) scale(1.03, .97); } 40% { transform: rotate(6deg); } 60% { transform: rotate(-4deg); } 80% { transform: rotate(2deg); } }
+@keyframes r-glow { 40% { opacity: 1; filter: url(#wash) brightness(1.18) saturate(1.2); } }
+.spark-host { position: relative; }
+.lantern-wrap { cursor: pointer; }

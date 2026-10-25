@@ -1,10 +1,12 @@
 // صفحه‌ی «جابه‌جایی»: حساب‌ها، جریانِ ثبت، و همکارها
 import * as J from './jalali.js';
 import { S, save, uid, shiftOn, typeOf, isWork, addSwap, removeSwap, balances, person, personName } from './store.js';
-import { C, t, $, $$, esc, fa, todayKey, dayTitle, relDay, shiftText, chip, toast, openSheet, closeSheet, shareText, vibrate } from './ui.js';
+import { C, t, $, $$, esc, fa, todayKey, dayTitle, relDay, shiftText, chip, toast, openSheet, closeSheet, shareText, vibrate, download } from './ui.js';
 import { icon, shiftGlyph, lantern, squiggle } from './glyphs.js';
 import { monthGrid, curMonth, shiftMonth, openPainter } from './calendar.js';
 import { bus } from './bus.js';
+import { react } from './mascot.js';
+import { calButtons, icsFile, swapEvents } from './ics.js';
 
 const OFF = 'O';
 
@@ -102,11 +104,14 @@ function openSwapDetail(id) {
     <h2 class="sheet-title">${esc(nameOf(s))}</h2>
     <p class="summary">${summaryText(s).replace(/\n/g, '<br>')}</p>
     <button class="btn" data-act="share">${icon('share', 'sm')} ${t(C.swap.share, { name: esc(nameOf(s)) })}</button>
+    <div class="lbl">${C.swap.addCal}</div>
+    ${calButtons(s)}
     <button class="btn danger-btn" data-act="undo">${C.swap.undo}</button>`);
   body.onclick = (e) => {
     const a = e.target.closest('[data-act]');
     if (!a) return;
     if (a.dataset.act === 'share') shareText(messageText(s));
+    if (a.dataset.act === 'phonecal') download(`swap-${s.id}.ics`, icsFile(swapEvents(s), 'fanoos-swap-' + s.id), 'text/calendar');
     if (a.dataset.act === 'undo') { removeSwap(id); toast(C.swap.undone); closeSheet(); bus.refresh(); }
   };
 }
@@ -191,7 +196,7 @@ export function openSwapFlow(key) {
       h += `<h2 class="sheet-title">${C.swap.withWho}</h2>
         <div class="people pick">${people.map((p) => {
           const c = shiftOn(p.id, key);
-          const free = Object.keys(p.plan || {}).length && !isWork(c);
+          const free = Object.keys(p.plan || {}).length && (!c || c === OFF);
           return `<button class="person" data-with="${p.id}"><span class="av">${esc(p.name.slice(0, 1))}</span>${esc(p.name)}
             ${c ? chip(c, 'xs') : ''}${free ? `<em class="free">${C.ui.off}</em>` : ''}</button>`;
         }).join('')}</div>
@@ -227,9 +232,12 @@ export function openSwapFlow(key) {
       h = `<div class="saved">${lantern('happy', 'mid')}
         <p class="summary">${C.swap.saved}</p>
         <button class="btn solid" data-act="share">${icon('share', 'sm')} ${t(C.swap.share, { name: esc(personName(f.with)) })}</button>
+        <div class="lbl">${C.swap.addCal}</div>
+        ${calButtons(f.saved)}
         <button class="btn" data-act="close">${C.ui.close}</button></div>`;
     }
     body.innerHTML = h;
+    if (f.step === 'saved') setTimeout(() => react('hop', body), 250);
   };
 
   body.onclick = (e) => {
@@ -280,6 +288,7 @@ export function openSwapFlow(key) {
       return draw();
     }
     if (act === 'share') return shareText(messageText(f.saved));
+    if (act === 'phonecal') return download(`swap-${f.saved.id}.ics`, icsFile(swapEvents(f.saved), 'fanoos-swap-' + f.saved.id), 'text/calendar');
     if (act === 'close') closeSheet();
   };
 

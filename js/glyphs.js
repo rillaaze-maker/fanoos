@@ -64,21 +64,30 @@ export const squiggle = '<svg class="squiggle" viewBox="0 0 120 10" preserveAspe
 // (اسمِ تابع «lantern» مانده تا بقیه‌ی کد عوض نشود)
 const FLAME = 'M40.3 12.6c3.6 9.4 16.4 20.7 16.6 38.1.2 13.5-7.4 23.7-16.8 23.8-9.6.1-17.3-9.6-17.2-22.6.1-9.4 4.4-15.8 8.3-21.3.4 4.6 1.6 8.2 4 10.4-.9-10.6 2.2-19.8 5.1-28.4z';
 
+// همه‌ی چهره‌ها کشیده می‌شوند و CSS یکی را نشان می‌دهد؛ این‌طوری واکنش‌ها فقط کلاس عوض می‌کنند
+const EYES = '<g class="eyes"><circle cx="34.6" cy="60" r="1.7"/><circle cx="45.4" cy="60" r="1.7"/></g>';
+const FACES = {
+  calm: EYES + '<path fill="none" d="M37.6 65.6c1.6 1.2 3.3 1.2 4.9 0"/>',
+  soft: EYES + '<path fill="none" d="M38 66h4"/>',
+  sleepy: '<path fill="none" d="M32.6 60.4c1.3.8 2.7.8 4 0M43.4 60.4c1.3.8 2.7.8 4 0M38.4 66h3.2"/><text class="zz" x="58" y="30">z</text><text class="zz z2" x="65" y="20">z</text>',
+  happy: '<path fill="none" d="M32.4 61c1.1-1.9 3.1-1.9 4.2 0M43.3 61c1.1-1.9 3.1-1.9 4.2 0M36.9 64.8c1.9 2.2 4.3 2.2 6.2 0"/>',
+  // مهربان و دلداری‌دهنده: چشم‌های رو به پایین، لبخندِ کوچک
+  tender: '<path fill="none" d="M32.6 59.8c1.3 1.1 2.8 1.1 4 0M43.4 59.8c1.3 1.1 2.8 1.1 4 0M38.2 65.4c1.2.8 2.4.8 3.6 0"/>',
+};
+
 export function lantern(mood = 'calm', cls = '') {
-  const face = {
-    calm: '<circle cx="34.6" cy="60" r="1.7"/><circle cx="45.4" cy="60" r="1.7"/><path fill="none" d="M37.6 65.6c1.6 1.2 3.3 1.2 4.9 0"/>',
-    sleepy: '<path fill="none" d="M32.6 60.4c1.3.8 2.7.8 4 0M43.4 60.4c1.3.8 2.7.8 4 0M38.4 66h3.2"/><text class="zz" x="58" y="30">z</text><text class="zz z2" x="65" y="20">z</text>',
-    happy: '<path fill="none" d="M32.4 61c1.1-1.9 3.1-1.9 4.2 0M43.3 61c1.1-1.9 3.1-1.9 4.2 0M36.9 64.8c1.9 2.2 4.3 2.2 6.2 0"/>',
-    soft: '<circle cx="34.6" cy="60" r="1.7"/><circle cx="45.4" cy="60" r="1.7"/><path fill="none" d="M38 66h4"/>',
-  }[mood] || '';
-  return `<svg class="lantern ${cls} m-${mood}" viewBox="0 0 80 90" aria-hidden="true">
+  const faces = Object.entries(FACES).map(([k, f]) => `<g class="face f-${k}">${f}</g>`).join('');
+  const blink = (2 + Math.random() * 4).toFixed(2);
+  return `<svg class="lantern ${cls} m-${mood}" viewBox="0 0 80 90" aria-hidden="true" style="--blink-delay:${blink}s">
+  <g class="body">
   <g class="flame-g" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <g filter="url(#wob)">
       <path class="flame" fill="var(--flame)" stroke="none" d="${FLAME}"/>
       <path d="${FLAME}"/>
     </g>
     <g class="ghost" filter="url(#wob2)"><path d="${FLAME}"/></g>
-    <g class="face" fill="var(--face)" stroke="var(--face)" stroke-width="1.5">${face}</g>
+    <g class="faces" fill="var(--face)" stroke="var(--face)" stroke-width="1.5">${faces}</g>
+  </g>
   </g>
   <path fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" filter="url(#wob)" d="M28.6 83.4c7.6-.9 15.3-.9 22.9.1"/>
 </svg>`;

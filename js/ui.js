@@ -76,10 +76,20 @@ export const name = () => S.me.name || '';
 // ── نوشتن مثل جوهر: کلمه‌به‌کلمه ────────────────────────────────
 export function inkWords(text, delay = 0) {
   let i = 0;
-  return esc(text).split('\n').map((line) =>
-    line.split(' ').map((w) => `<span class="w" style="animation-delay:${delay + (i++) * 110}ms">${w}</span>`).join(' ')
-  ).join('<br>');
+  let afterArabic = false;
+  return esc(text).split('\n').map((line) => {
+    // خطِ عربی (با اعراب) درشت‌تر؛ خطِ بعدش، یعنی معنا، کوچک‌تر
+    const cls = HARAKAT.test(line) ? 'ar' : afterArabic ? 'tr' : '';
+    afterArabic = cls !== '';
+    const words = line.split(' ').map((w) => `<span class="w" style="animation-delay:${delay + (i++) * 110}ms">${w}</span>`).join(' ');
+    return cls ? `<span class="${cls}">${words}</span>` : words;
+  }).join('<br>');
 }
+
+const HARAKAT = /[ً-ْ]/;
+
+// «مریم‌ست»، «ساراست»
+export const nameIs = (n) => (/[اوآ]$/.test(n) ? n + 'ست' : n + '‌ست');
 
 // ── برگه‌ی پایین (sheet) ──────────────────────────────────────
 let sheetStack = [];

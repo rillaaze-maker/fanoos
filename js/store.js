@@ -13,6 +13,8 @@ export const DEFAULT_TYPES = [
   { code: 'N', label: 'شب', start: '19:00', end: '07:00', kind: 'night', color: '#4F55A8' },
   { code: 'AN', label: 'عصر و شب', start: '13:00', end: '07:00', kind: 'night', color: '#5E4D9E' },
   { code: 'MAN', label: '۲۴ ساعته', start: '07:00', end: '07:00', kind: 'full', color: '#7A3F7C' },
+  { code: 'CA', label: 'CA · ۱۲ ساعته', start: '07:00', end: '19:00', kind: 'long', color: '#C98A6B' },
+  { code: 'CAN', label: 'CAN · ۲۴ ساعته', start: '07:00', end: '07:00', kind: 'full', color: '#8E5A7E' },
   { code: 'O', label: 'استراحت', start: '', end: '', kind: 'off', color: '#86C2AD' },
   { code: 'H', label: 'مرخصی', start: '', end: '', kind: 'leave', color: '#86B2DD' },
 ];
@@ -42,7 +44,12 @@ export let S = load();
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { ...defaults(), ...JSON.parse(raw) };
+    if (raw) {
+      const st = { ...defaults(), ...JSON.parse(raw) };
+      // شیفت‌های پیش‌فرضِ تازه را به نسخه‌های قدیمی اضافه کن
+      for (const t of DEFAULT_TYPES) if (!st.types.some((x) => x.code === t.code)) st.types.push({ ...t });
+      return st;
+    }
   } catch (e) { /* حافظه در دسترس نیست */ }
   return defaults();
 }

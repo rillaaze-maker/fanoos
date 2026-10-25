@@ -1,9 +1,10 @@
 // صفحه‌ی «پناه» — ابزارهای دفترچه‌ی «دستِ استوار، قلبِ بیدار»
 import * as J from './jalali.js';
 import { S, save } from './store.js';
-import { C, t, $, $$, esc, fa, todayKey, dayTitle, toast, openSheet, closeSheet, name, inkWords, vibrate } from './ui.js';
+import { C, t, $, $$, esc, fa, todayKey, dayTitle, toast, openSheet, closeSheet, name, inkWords, vibrate, nameIs } from './ui.js';
 import { icon, lantern, squiggle } from './glyphs.js';
 import { bus } from './bus.js';
+import { queueReact } from './mascot.js';
 
 const T = C.tools;
 
@@ -13,7 +14,7 @@ const CARDS = [
   ['anchor', 'heart', 'sand'],
   ['name', 'pen', 'rose'],
   ['scrub', 'swap', 'teal'],
-  ['loss', 'moon', 'night'],
+  ['refuge', 'moon', 'night'],
   ['home', 'cup', 'sand'],
   ['light', 'sun', 'warm'],
   ['signs', 'bell', 'rose'],
@@ -41,7 +42,7 @@ export function renderCare(el) {
 }
 
 export function openTool(id) {
-  ({ sigh, box, anchor, name: nameIt, mine, scrub, loss, home, light, signs }[id] || (() => {}))();
+  ({ sigh, box, anchor, name: nameIt, mine, scrub, loss, refuge, home, light, signs }[id] || (() => {}))();
 }
 
 // ── آهِ فیزیولوژیک ────────────────────────────────────────────
@@ -183,12 +184,25 @@ function loss() {
   };
 }
 
+// ── چهار پناه (حدیثِ امام صادق ع) ─────────────────────────────
+function refuge() {
+  const R = T.refuge;
+  openSheet(`<h2 class="sheet-title">${R.t}</h2>
+    <p class="refuge-intro">${R.intro}</p>
+    ${R.items.map((x) => `<section class="refuge">
+      <div class="lbl">${x.when}</div>
+      <p class="ar-big">${x.dhikr}</p>
+      <p class="ref">${x.ref}</p>
+      <p class="after">${x.after}</p>
+    </section>`).join('')}`, { cls: 'tool-sheet' });
+}
+
 // ── راهِ خونه ─────────────────────────────────────────────────
 function home() {
   const body = openSheet('', { cls: 'tool-sheet', onClose: () => bus.refresh() });
   const draw = () => {
     body.innerHTML = `<h2 class="sheet-title">${T.home.t}</h2><p class="hint">${T.home.pick}</p>
-      <div class="options">${T.home.options.map((o, i) => `<button class="opt ${i === S.homeRitual ? 'on' : ''}" data-i="${i}">${t(o, { name: esc(name()) })}</button>`).join('')}</div>`;
+      <div class="options">${T.home.options.map((o, i) => `<button class="opt ${i === S.homeRitual ? 'on' : ''}" data-i="${i}">${t(o, { name: esc(name()), nameIs: esc(nameIs(name())) })}</button>`).join('')}</div>`;
   };
   body.onclick = (e) => { const o = e.target.closest('[data-i]'); if (o) { S.homeRitual = +o.dataset.i; save(); draw(); } };
   draw();
@@ -196,7 +210,7 @@ function home() {
 
 // ── دفترِ روشنایی ─────────────────────────────────────────────
 function light() {
-  const body = openSheet('', { cls: 'tool-sheet light-book' });
+  const body = openSheet('', { cls: 'tool-sheet light-book', onClose: () => bus.refresh() });
   const draw = (fresh) => {
     const prompt = T.light.prompts[(S.light.length) % T.light.prompts.length];
     body.innerHTML = `<h2 class="sheet-title">${T.light.t}</h2>
@@ -212,7 +226,7 @@ function light() {
     const v = ta.value.trim();
     if (!v) return ta.focus();
     S.light.push({ at: Date.now(), text: v });
-    save(); vibrate(12); draw(true);
+    save(); vibrate(12); queueReact('glow'); draw(true);
   };
   draw();
 }
@@ -248,7 +262,8 @@ export function openLinePicker() {
   const body = openSheet('', { cls: 'tool-sheet', onClose: () => bus.refresh() });
   const seen = new Set();
   const draw = () => {
-    const groups = Object.entries(C.lines).map(([g, arr]) => {
+    const order = ['dhikr', 'ayat', ...Object.keys(C.lines).filter((k) => k !== 'dhikr' && k !== 'ayat')];
+    const groups = order.map((g) => [g, C.lines[g]]).map(([g, arr]) => {
       const items = arr.filter((l) => !seen.has(l) && seen.add(l));
       return items.length ? `<div class="lbl">${C.pick.groups[g] || ''}</div>` + items.map((l) =>
         `<button class="opt ${S.line === l ? 'on' : ''}" data-l="${esc(l)}">${esc(l)}</button>`).join('') : '';
@@ -262,6 +277,6 @@ export function openLinePicker() {
     const ta = $('.note', body);
     ta.oninput = () => { if (ta.value.trim()) { S.line = ta.value.trim(); save(); $$('.opt', body).forEach((o) => o.classList.remove('on')); } };
   };
-  body.onclick = (e) => { const o = e.target.closest('[data-l]'); if (o) { S.line = o.dataset.l; save(); vibrate(8); draw(); } };
+  body.onclick = (e) => { const o = e.target.closest('[data-l]'); if (o) { S.line = o.dataset.l; save(); vibrate(8); queueReact('nod'); draw(); } };
   draw();
 }

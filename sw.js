@@ -1,9 +1,9 @@
 // کارکردِ بی‌اینترنت: همه‌چیز در حافظه‌ی گوشی می‌ماند
 // هر بار فایلی را عوض کردی، این شماره را یکی بالا ببر
-const VERSION = 'fanoos-v2';
+const VERSION = 'fanoos-v4';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/style.css',
-  'js/app.js', 'js/bus.js', 'js/calendar.js', 'js/care.js', 'js/copy.js', 'js/gift.js', 'js/glyphs.js',
+  'js/app.js', 'js/bus.js', 'js/calendar.js', 'js/care.js', 'js/copy.js', 'js/gift.js', 'js/glyphs.js', 'js/ics.js', 'js/mascot.js',
   'js/jalali.js', 'js/settings.js', 'js/store.js', 'js/swaps.js', 'js/today.js', 'js/ui.js',
   'fonts/DanaFaNum-Regular.woff2', 'fonts/DanaFaNum-Medium.woff2', 'fonts/DanaFaNum-DemiBold.woff2',
   'fonts/DanaFaNum-Bold.woff2', 'fonts/DanaFaNum-ExtraBold.woff2',
