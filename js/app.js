@@ -68,6 +68,7 @@ function onboard() {
         ${!done && installPrompt ? `<button class="btn solid" data-act="install">${C.install.button}</button>` : ''}
         ${done ? '' : `<ol class="install-steps">${C.install.steps.map((x) => `<li><span>${x}</span></li>`).join('')}</ol>`}
         <button class="${done ? 'btn solid' : 'link'}" data-act="later">${done ? C.install.continue : C.install.later}</button></div>`;
+      hideBoot();
       $('[data-act="later"]', root).onclick = () => { try { sessionStorage.setItem('fanoos.skipInstall', '1'); } catch (e) { /* */ } next(); };
       const ib = $('[data-act="install"]', root);
       if (ib) ib.onclick = async () => {
@@ -90,6 +91,7 @@ function onboard() {
       <label class="lbl">${C.onboard.askName}</label>
       <input class="line-in big" data-name placeholder="${C.onboard.namePh}" autocomplete="given-name">
       <button class="btn solid" data-act="go">${C.onboard.go}</button></div>`;
+    hideBoot();
     const inp = $('[data-name]', root);
     inp.onkeydown = (e) => { if (e.key === 'Enter') $('[data-act]', root).click(); };
     $('[data-act]', root).onclick = () => {
@@ -105,13 +107,13 @@ function onboard() {
     root.innerHTML = `<div class="ob">
       <div class="ob-lantern">${lantern('calm', 'big')}</div>
       <h1 class="ob-hello">${C.onboard.giftHello}</h1>
-      <p class="ob-text">${inkWords(C.onboard.giftText, 400)}</p>
       <label class="lbl" for="otp">${C.onboard.askCode}</label>
       <div class="otp" dir="ltr">
         <input id="otp" class="otp-in" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" aria-describedby="otp-msg">
         ${[0, 1, 2, 3, 4, 5].map((i) => `<span class="slot"></span>${i === 2 ? '<i class="otp-gap"></i>' : ''}`).join('')}
       </div>
       <p class="ob-err" id="otp-msg" aria-live="polite"></p></div>`;
+    hideBoot();
     const box = $('.otp', root), inp = $('.otp-in', root), err = $('.ob-err', root);
     const slots = [...root.querySelectorAll('.slot')];
     let busy = false;
@@ -187,12 +189,35 @@ function needsInstall() {
 }
 
 // ── شروعِ برنامه: شعله‌ی خواب‌آلود بیدار می‌شود، یه جرقه می‌زند و می‌رود سرِ جایش ──
+// شعله‌ی بارگذاری بیدار می‌شود و می‌رود سرِ جایش در صفحه‌ی شروع؛ یک شعله، نه دو تا
+function hideBoot() {
+  const b = $('#boot');
+  if (!b) return;
+  b.removeAttribute('id');
+  const f = $('.sp-flame', b);
+  const t = $('#onboard .ob-lantern .lantern');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!t || reduced) {
+    b.classList.add('fade');
+    setTimeout(() => b.remove(), 450);
+    return;
+  }
+  const mood = [...t.classList].find((c) => c.startsWith('m-'));
+  const svg = $('.lantern', f);
+  svg.classList.remove('m-sleepy');
+  svg.classList.add(mood);
+  t.style.visibility = 'hidden';
+  const a = f.getBoundingClientRect(), c = t.getBoundingClientRect();
+  f.style.transform = `translate(${c.left + c.width / 2 - (a.left + a.width / 2)}px, ${c.top + c.height / 2 - (a.top + a.height / 2)}px) scale(${c.width / a.width})`;
+  b.classList.add('go');
+  setTimeout(() => { t.style.visibility = ''; b.remove(); }, 850);
+}
+
 function splash() {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const ov = document.createElement('div');
-  ov.className = 'splash';
-  ov.innerHTML = `<div class="sp-flame">${lantern('sleepy')}</div>`;
-  document.body.appendChild(ov);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return hideBoot();
+  const ov = $('#boot') || Object.assign(document.createElement('div'), { className: 'splash', innerHTML: `<div class="sp-flame">${lantern('sleepy')}</div>` });
+  ov.removeAttribute('id');
+  if (!ov.isConnected) document.body.appendChild(ov);
   const f = $('.sp-flame', ov);
   const target = $('.lantern-wrap');
   if (target) target.style.visibility = 'hidden';

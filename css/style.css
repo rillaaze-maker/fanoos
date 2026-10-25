@@ -659,3 +659,14 @@ body.onboarding .tabbar { display: none; }
 .lantern-wrap { cursor: pointer; }
 .install-steps .en { font-family: var(--f-code); font-weight: 700; direction: ltr; unicode-bidi: isolate; background: var(--paper-3); padding: 1px 8px; border-radius: 7px; white-space: nowrap; }
 .opt.muted-opt { color: var(--ink-2); }
+/* شعله‌ی بارگذاری */
+#boot .sp-flame { animation: none; }
+.splash.fade { opacity: 0; transition: opacity .45s ease; pointer-events: none; }
+/* صفحه‌های شروع وسطِ صفحه، تا شعله از همان‌جا که بود ادامه بدهد */
+.ob { min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; padding-top: calc(24px + env(safe-area-inset-top)); padding-bottom: 40px; }
+.otp { gap: 6px; }
+.otp-gap { width: 8px; margin: 0 3px; }
+.splash.go .sp-flame { opacity: 1; }
+#onboard .ob { animation: obIn .6s .15s ease both; }
+@keyframes obIn { from { opacity: 0; } }
+#onboard .ob-lantern { animation: none; }
